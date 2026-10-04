@@ -1,0 +1,13 @@
+.env
+.venv/
+.pytest_cache/
+.git/
+.vercel/
+api/*.db
+api/*.sqlite3
+api/*.log
+api/tests/
+api/alembic/
+web/node_modules/
+web/*.log
+docs/

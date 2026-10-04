@@ -1,0 +1,22 @@
+[project]
+name = "adskz-crm"
+version = "0.1.0"
+requires-python = ">=3.13,<3.15"
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.30,<1",
+    "SQLAlchemy>=2.0,<3",
+    "alembic>=1.13,<2",
+    "psycopg[binary]>=3.2,<4",
+    "pydantic-settings>=2.5,<3",
+    "PyJWT>=2.9,<3",
+    "pwdlib[argon2]>=0.2,<1",
+    "email-validator>=2.2,<3",
+    "httpx>=0.27,<1",
+]
+
+[tool.vercel]
+entrypoint = "api.app.vercel:app"
+
+[tool.vercel.scripts]
+build = "python build_vercel.py"

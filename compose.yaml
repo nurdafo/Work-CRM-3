@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: adskz
+      POSTGRES_USER: adskz
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adskz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  api:
+    build: ./api
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://adskz:${POSTGRES_PASSWORD}@db:5432/adskz
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      INTEGRATION_ENCRYPTION_KEY: ${INTEGRATION_ENCRYPTION_KEY:?Set INTEGRATION_ENCRYPTION_KEY in .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      META_LEADS_ACCESS_TOKEN: ${META_LEADS_ACCESS_TOKEN:-}
+      META_PAGE_ID: ${META_PAGE_ID:-}
+      META_FORM_ID: ${META_FORM_ID:-}
+      META_API_VERSION: ${META_API_VERSION:-v23.0}
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    build: ./web
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      - api
+  telegram-worker:
+    build: ./api
+    command: ["python", "-m", "app.telegram"]
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://adskz:${POSTGRES_PASSWORD}@db:5432/adskz
+      INTEGRATION_ENCRYPTION_KEY: ${INTEGRATION_ENCRYPTION_KEY:?Set INTEGRATION_ENCRYPTION_KEY in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  pgdata:
